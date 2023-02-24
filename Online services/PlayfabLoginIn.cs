@@ -5,7 +5,7 @@ using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine.UI;
-using StarterAssets;
+//using StarterAssets;
 
 public class PlayfabLoginIn : MonoBehaviour
 {
@@ -19,8 +19,9 @@ public class PlayfabLoginIn : MonoBehaviour
     [SerializeField] private Canvas registerPage;
     [SerializeField] private Canvas forgotPasswordPage;
     [SerializeField] private Canvas characterChangePage;
-
-
+    [SerializeField] private Camera characterChangeCam;
+    [SerializeField] private Canvas mainMenuPage;
+    [SerializeField] private Camera mainMenuCam;
     [SerializeField] private List<Button> listOfButtons;
 
     private static Canvas currentPage;
@@ -28,7 +29,7 @@ public class PlayfabLoginIn : MonoBehaviour
 
     // Update is called once per frame
     private void Start() {
-            ThirdPersonController.changeIsCanMove(false);
+      //      ThirdPersonController.changeIsCanMove(false);
     }
 
     public void RegisterButton() {
@@ -40,15 +41,15 @@ public class PlayfabLoginIn : MonoBehaviour
         var request = new RegisterPlayFabUserRequest{
             Email = emailInput.text,
             Password = passwordInput.text,
-            Username = username.text
+            DisplayName = username.text,
+            RequireBothUsernameAndEmail = false
         };
 
         PlayFabClientAPI.RegisterPlayFabUser(request, OnRegisterSucces, OnError);
     }
 
     void OnRegisterSucces(RegisterPlayFabUserResult result){
-        currentPage.gameObject.SetActive(false);
-        characterChangePage.gameObject.SetActive(true);
+        PlayFabClientAPI.GetUserData(new GetUserDataRequest(), OnGameEnter, OnError);
     }
 
     public void LoginButton() {
@@ -61,14 +62,26 @@ public class PlayfabLoginIn : MonoBehaviour
 
     void OnLoginSucces(LoginResult result){
         if(currentPage == null)currentPage = loginPage;
-        currentPage.gameObject.SetActive(false);
-        characterChangePage.gameObject.SetActive(true);
+        PlayFabClientAPI.GetUserData(new GetUserDataRequest(), OnGameEnter, OnError);
     }
-
+    public void OnGameEnter(GetUserDataResult result = null){
+        if(result.Data.ContainsKey("isHasCharacter") && bool.Parse(result.Data["isHasCharacter"].Value)){
+            characterChangeCam.gameObject.SetActive(false);
+            mainMenuCam.gameObject.SetActive(true);
+            currentPage.gameObject.SetActive(false);
+            mainMenuPage.gameObject.SetActive(true);
+        }
+        else{
+            mainMenuCam.gameObject.SetActive(false);
+            characterChangeCam.gameObject.SetActive(true);
+            currentPage.gameObject.SetActive(false);
+            characterChangePage.gameObject.SetActive(true);
+        }
+    }
     public void ResetPasswordButton() {
             var request = new SendAccountRecoveryEmailRequest{
                 Email = emailInput.text,
-                TitleId = "54E4C"
+                TitleId = "2B7BB"
             };
         PlayFabClientAPI.SendAccountRecoveryEmail(request, OnPasswordReset, OnError);
     }

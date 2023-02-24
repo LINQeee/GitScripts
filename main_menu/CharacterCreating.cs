@@ -4,10 +4,12 @@ using UnityEngine;
 using System;
 using UnityEngine.UI;
 using CharacterData;
+using PlayFab;
+using PlayFab.ClientModels;
 
 public class CharacterCreating : MonoBehaviour
 {
-    private playerData data;
+    [SerializeField] private playerData data;
     private GameObject player;
 
     [SerializeField] private Text hairText;
@@ -18,18 +20,21 @@ public class CharacterCreating : MonoBehaviour
     [SerializeField] private Toggle maleToggle;
     [SerializeField] private GameObject importantRedMessage;
     [SerializeField] private GameObject importantGreenMessage;
+    [SerializeField] private UpdateUserServerData DataManager;
 
     private void Start() {
-        data = GameObject.FindWithTag("Player").GetComponent<playerData>();
         player = GameObject.FindWithTag("Player");
-
         importantGreenMessage.transform.Find("Text").GetComponent<Text>().text = "It looks like you don't have a character yet, let's create one!";
         importantGreenMessage.GetComponent<Animation>().Play("importantGreenMessageAnimation");
     }
 
+public void SendData(){
+    DataManager.updateData();
+}
+
 public void genderToMaleButton(){
     if(maleToggle.isOn){
-            characterReset(CharacterData.CharacterData.femaleParts);
+            characterReset(CharacterData.CharacterData.femaleParts, data);
             CharacterData.CharacterData.currentGenderParts = CharacterData.CharacterData.maleParts;
             CharacterData.CharacterData.maleParts.SetActive(true);
             FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleHair[data.currentHairId].modelOfDecoration.name).SetActive(true);
@@ -45,7 +50,7 @@ public void genderToMaleButton(){
 
 public void genderToFemaleButton(){
     if(femaleToggle.isOn){
-            characterReset(CharacterData.CharacterData.maleParts);
+            characterReset(CharacterData.CharacterData.maleParts, data);
             CharacterData.CharacterData.currentGenderParts = CharacterData.CharacterData.femaleParts;
             CharacterData.CharacterData.femaleParts.SetActive(true);
             FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleHair[data.currentHairId].modelOfDecoration.name).SetActive(true);
@@ -277,28 +282,36 @@ public void genderToFemaleButton(){
         hairText.text = $"HAIR {data.currentHairId+1}";
     }
 
-    private void characterReset(GameObject genderParts){
+    public static void characterReset(GameObject genderParts, playerData pData){
         if(genderParts == CharacterData.CharacterData.femaleParts){
             CharacterData.CharacterData.femaleParts.SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleHair[data.currentHairId].modelOfDecoration.name).SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleFacialHair[data.currentFacialHairId].modelOfDecoration.name).SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleHead[data.currentHeadId].modelOfDecoration.name).SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleEyebrows[data.currentEyebrowsId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleHair[pData.currentHairId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleFacialHair[0].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleHead[pData.currentHeadId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleEyebrows[pData.currentEyebrowsId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleHair[pData.currentHairId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleFacialHair[pData.currentFacialHairId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleHead[pData.currentHeadId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleEyebrows[pData.currentEyebrowsId].modelOfDecoration.name).SetActive(false);
         }
         else{
             CharacterData.CharacterData.maleParts.SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleHair[data.currentHairId].modelOfDecoration.name).SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleFacialHair[data.currentFacialHairId].modelOfDecoration.name).SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleHead[data.currentHeadId].modelOfDecoration.name).SetActive(false);
-            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleEyebrows[data.currentEyebrowsId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleHair[pData.currentHairId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleFacialHair[pData.currentFacialHairId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleHead[pData.currentHeadId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.maleParts, CharacterData.CharacterData.allMaleEyebrows[pData.currentEyebrowsId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleHair[pData.currentHairId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleFacialHair[0].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleHead[pData.currentHeadId].modelOfDecoration.name).SetActive(false);
+            FromAllChilds(CharacterData.CharacterData.femaleParts, CharacterData.CharacterData.allFemaleEyebrows[pData.currentEyebrowsId].modelOfDecoration.name).SetActive(false);
         }
-            data.currentEyebrowsId = 0;
-            data.currentFacialHairId = 0;
-            data.currentHairId = 0;
-            data.currentHeadId = 0;
+            pData.currentEyebrowsId = 0;
+            pData.currentFacialHairId = 0;
+            pData.currentHairId = 0;
+            pData.currentHeadId = 0;
     }
 
-    public GameObject FromAllChilds(GameObject obj, string name) {
+    public static GameObject FromAllChilds(GameObject obj, string name) {
      foreach(Transform tran in obj.transform)
      {
         if(tran.name == name) return tran.gameObject;
